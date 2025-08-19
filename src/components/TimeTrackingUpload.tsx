@@ -249,9 +249,8 @@ const TimeTrackingUpload = () => {
         </Card>
 
         {/* Additional Information Form */}
-        {uploadedFile && (
-          <Card className="p-6 mt-6">
-            <h3 className="text-lg font-semibold text-foreground mb-6">Zusätzliche Informationen</h3>
+        <Card className="p-6 mt-6">
+          <h3 className="text-lg font-semibold text-foreground mb-6">Zusätzliche Informationen</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="year">Jahr</Label>
@@ -310,8 +309,7 @@ const TimeTrackingUpload = () => {
                 {isUploading ? 'Wird gesendet...' : 'Daten senden'}
               </Button>
             </div>
-          </Card>
-        )}
+        </Card>
 
         {/* Webhook Info */}
         <Card className="p-4 mt-6">
