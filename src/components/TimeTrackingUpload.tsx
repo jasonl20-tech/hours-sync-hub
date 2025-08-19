@@ -5,21 +5,44 @@ import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { Upload, FileText, CheckCircle, AlertCircle, Settings } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, Settings, Send } from 'lucide-react';
 
 const TimeTrackingUpload = () => {
   const [isProduction, setIsProduction] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [year, setYear] = useState('');
+  const [month, setMonth] = useState('');
+  const [bundesland, setBundesland] = useState('');
 
   const webhookUrls = {
     test: 'https://xlk.ai/webhook-test/e943802d-4d29-48af-b02d-b3d6f49cce11',
     production: 'https://xlk.ai:5678/webhook/e943802d-4d29-48af-b02d-b3d6f49cce11'
   };
 
-  const uploadToWebhook = async (file: File) => {
+  const uploadToWebhook = async () => {
+    if (!uploadedFile) {
+      toast({
+        title: "Keine Datei ausgewählt",
+        description: "Bitte wählen Sie zuerst eine Datei aus.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!year || !month || !bundesland) {
+      toast({
+        title: "Fehlende Informationen",
+        description: "Bitte füllen Sie alle Felder aus.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const webhookUrl = isProduction ? webhookUrls.production : webhookUrls.test;
     
     setIsUploading(true);
@@ -27,9 +50,12 @@ const TimeTrackingUpload = () => {
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', uploadedFile);
       formData.append('environment', isProduction ? 'production' : 'test');
       formData.append('timestamp', new Date().toISOString());
+      formData.append('year', year);
+      formData.append('month', month);
+      formData.append('bundesland', bundesland);
 
       // Simulate progress
       const progressInterval = setInterval(() => {
@@ -75,9 +101,42 @@ const TimeTrackingUpload = () => {
     const file = acceptedFiles[0];
     if (file) {
       setUploadedFile(file);
-      uploadToWebhook(file);
     }
-  }, [isProduction]);
+  }, []);
+
+  const bundeslaender = [
+    'Baden-Württemberg',
+    'Bayern',
+    'Berlin',
+    'Brandenburg',
+    'Bremen',
+    'Hamburg',
+    'Hessen',
+    'Mecklenburg-Vorpommern',
+    'Niedersachsen',
+    'Nordrhein-Westfalen',
+    'Rheinland-Pfalz',
+    'Saarland',
+    'Sachsen',
+    'Sachsen-Anhalt',
+    'Schleswig-Holstein',
+    'Thüringen'
+  ];
+
+  const monate = [
+    { value: '01', label: 'Januar' },
+    { value: '02', label: 'Februar' },
+    { value: '03', label: 'März' },
+    { value: '04', label: 'April' },
+    { value: '05', label: 'Mai' },
+    { value: '06', label: 'Juni' },
+    { value: '07', label: 'Juli' },
+    { value: '08', label: 'August' },
+    { value: '09', label: 'September' },
+    { value: '10', label: 'Oktober' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'Dezember' }
+  ];
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -188,6 +247,71 @@ const TimeTrackingUpload = () => {
             </div>
           )}
         </Card>
+
+        {/* Additional Information Form */}
+        {uploadedFile && (
+          <Card className="p-6 mt-6">
+            <h3 className="text-lg font-semibold text-foreground mb-6">Zusätzliche Informationen</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="year">Jahr</Label>
+                <Input
+                  id="year"
+                  type="number"
+                  placeholder="2024"
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  min="2000"
+                  max="2030"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="month">Monat</Label>
+                <Select value={month} onValueChange={setMonth}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Monat auswählen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {monate.map((monat) => (
+                      <SelectItem key={monat.value} value={monat.value}>
+                        {monat.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="bundesland">Bundesland</Label>
+                <Select value={bundesland} onValueChange={setBundesland}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Bundesland auswählen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bundeslaender.map((land) => (
+                      <SelectItem key={land} value={land}>
+                        {land}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="mt-6">
+              <Button 
+                onClick={uploadToWebhook}
+                disabled={isUploading || !year || !month || !bundesland}
+                className="w-full"
+                size="lg"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {isUploading ? 'Wird gesendet...' : 'Daten senden'}
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Webhook Info */}
         <Card className="p-4 mt-6">
