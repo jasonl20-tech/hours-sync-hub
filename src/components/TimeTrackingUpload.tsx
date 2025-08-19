@@ -21,7 +21,7 @@ const TimeTrackingUpload = () => {
 
   const webhookUrls = {
     test: 'https://xlk.ai/webhook-test/e943802d-4d29-48af-b02d-b3d6f49cce11',
-    production: 'http://xlk.ai:5678/webhook/e943802d-4d29-48af-b02d-b3d6f49cce11'
+    production: 'https://xlk.ai/webhook/e943802d-4d29-48af-b02d-b3d6f49cce11'
   };
 
   const uploadToWebhook = async () => {
