@@ -86,9 +86,19 @@ const TimeTrackingUpload = () => {
         throw new Error(`HTTP ${response.status}`);
       }
     } catch (error) {
+      console.error('Upload error:', error);
+      
+      let errorMessage = "Es gab einen Fehler beim Senden der Datei.";
+      
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        errorMessage = isProduction 
+          ? "CORS-Fehler: Der Production Webhook ist möglicherweise nicht erreichbar oder erlaubt keine Cross-Origin-Requests."
+          : "Netzwerk-Fehler beim Senden der Datei.";
+      }
+      
       toast({
         title: "Upload fehlgeschlagen",
-        description: "Es gab einen Fehler beim Senden der Datei.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
